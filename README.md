@@ -38,6 +38,10 @@ A beautiful, modern web application that converts PDFs and images into Mathpix M
    MATHPIX_APP_KEY=ff0bed7ad43e32610ad9316a8b6ebaec19529953041b70c943925c0c5541518d
    PORT=3000
    ```
+   or
+   ```
+   source env.sh
+   ```
 
 4. **Start the server**:
    ```bash

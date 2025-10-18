@@ -1,0 +1,3 @@
+export MATHPIX_APP_ID=codered_hackathon_56fe2b
+export MATHPIX_APP_KEY=ff0bed7ad43e32610ad9316a8b6ebaec19529953041b70c943925c0c5541518d
+export PORT=3000
