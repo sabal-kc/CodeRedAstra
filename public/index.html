@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathpix Converter - PDF & Image to MMD/HTML</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📄 Mathpix Converter</h1>
+            <p class="subtitle">Convert PDFs and Images to Markdown or HTML</p>
+        </header>
+
+        <main>
+            <div class="upload-section">
+                <div class="format-selector">
+                    <label>Output Format:</label>
+                    <div class="format-buttons">
+                        <button class="format-btn active" data-format="mmd">MMD (Markdown)</button>
+                        <button class="format-btn" data-format="html">HTML</button>
+                    </div>
+                </div>
+
+                <div class="upload-container" id="uploadContainer">
+                    <div class="upload-icon">📤</div>
+                    <p class="upload-text">Drop your PDF or Image here</p>
+                    <p class="upload-subtext">or click to browse</p>
+                    <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp" hidden>
+                    <button class="browse-btn" id="browseBtn">Browse Files</button>
+                </div>
+
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <div class="file-details">
+                        <span class="file-name" id="fileName"></span>
+                        <span class="file-size" id="fileSize"></span>
+                    </div>
+                    <button class="remove-btn" id="removeBtn">✕</button>
+                </div>
+
+                <button class="convert-btn" id="convertBtn" disabled>Convert</button>
+
+                <div class="progress-container" id="progressContainer" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">Processing...</p>
+                </div>
+            </div>
+
+            <div class="output-section" id="outputSection" style="display: none;">
+                <div class="output-header">
+                    <h2>Result</h2>
+                    <div class="output-actions">
+                        <button class="action-btn" id="copyBtn">📋 Copy</button>
+                        <button class="action-btn" id="downloadBtn">💾 Download</button>
+                    </div>
+                </div>
+                <div class="output-tabs">
+                    <button class="tab-btn active" data-tab="preview">Preview</button>
+                    <button class="tab-btn" data-tab="raw">Raw</button>
+                </div>
+                <div class="output-content">
+                    <div class="tab-content active" id="previewTab">
+                        <div id="previewContent"></div>
+                    </div>
+                    <div class="tab-content" id="rawTab">
+                        <pre id="rawContent"></pre>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by <a href="https://mathpix.com/" target="_blank">Mathpix API</a></p>
+        </footer>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+
