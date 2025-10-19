@@ -2,6 +2,8 @@
 let selectedFile = null;
 let outputFormat = 'mmd';
 let currentOutput = null;
+let currentAccessibleHTML = null;
+let accessibilityMode = true;
 
 // DOM elements
 const uploadContainer = document.getElementById('uploadContainer');
@@ -20,7 +22,14 @@ const previewContent = document.getElementById('previewContent');
 const rawContent = document.getElementById('rawContent');
 const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
+const downloadHTMLBtn = document.getElementById('downloadHTMLBtn');
 const notification = document.getElementById('notification');
+const accessibilityModeCheckbox = document.getElementById('accessibilityMode');
+const metadataSection = document.getElementById('metadataSection');
+const imageCount = document.getElementById('imageCount');
+const mathCount = document.getElementById('mathCount');
+const processedTime = document.getElementById('processedTime');
+const accessibleFrame = document.getElementById('accessibleFrame');
 
 // Format selector
 document.querySelectorAll('.format-btn').forEach(btn => {
@@ -29,6 +38,12 @@ document.querySelectorAll('.format-btn').forEach(btn => {
         btn.classList.add('active');
         outputFormat = btn.dataset.format;
     });
+});
+
+// Accessibility mode toggle
+accessibilityModeCheckbox.addEventListener('change', (e) => {
+    accessibilityMode = e.target.checked;
+    console.log('Accessibility mode:', accessibilityMode ? 'ON' : 'OFF');
 });
 
 // Tab switcher
@@ -111,10 +126,14 @@ convertBtn.addEventListener('click', async () => {
     outputSection.style.display = 'none';
 
     try {
-        if (isPDF) {
-            await convertPDF();
+        if (accessibilityMode) {
+            await preprocessDocument();
         } else {
-            await convertImage();
+            if (isPDF) {
+                await convertPDF();
+            } else {
+                await convertImage();
+            }
         }
     } catch (error) {
         showNotification('Conversion failed: ' + error.message, 'error');
@@ -123,6 +142,36 @@ convertBtn.addEventListener('click', async () => {
         progressContainer.style.display = 'none';
     }
 });
+
+// NEW: Full preprocessing pipeline
+async function preprocessDocument() {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('format', outputFormat);
+    formData.append('generateDescriptions', 'true');
+    formData.append('title', selectedFile.name);
+
+    progressText.textContent = 'Converting with Mathpix...';
+    progressFill.style.width = '20%';
+
+    const response = await fetch('/api/preprocess-document', {
+        method: 'POST',
+        body: formData
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+        throw new Error(result.details || 'Preprocessing failed');
+    }
+
+    progressFill.style.width = '100%';
+    progressText.textContent = 'Complete!';
+
+    // Display enriched output
+    displayEnrichedOutput(result.data);
+    showNotification('Document preprocessed successfully!', 'success');
+}
 
 // Convert image
 async function convertImage() {
@@ -235,6 +284,7 @@ async function convertPDF() {
 // Display output
 function displayOutput(content) {
     currentOutput = content;
+    currentAccessibleHTML = null;
     
     // Display raw content
     rawContent.textContent = content;
@@ -247,8 +297,82 @@ function displayOutput(content) {
         previewContent.innerHTML = content;
     }
     
+    // Hide metadata and accessible tab for basic mode
+    metadataSection.style.display = 'none';
+    document.querySelector('[data-tab="accessible"]').style.display = 'none';
+    downloadHTMLBtn.style.display = 'none';
+    
     outputSection.style.display = 'block';
     outputSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Display enriched output from preprocessing
+function displayEnrichedOutput(data) {
+    currentOutput = data.enrichedMarkdown;
+    currentAccessibleHTML = data.accessibleHTML;
+    
+    // Display raw markdown
+    rawContent.textContent = data.enrichedMarkdown;
+    
+    // Display preview
+    previewContent.innerHTML = marked.parse(data.enrichedMarkdown);
+    
+    // Display accessible HTML in iframe
+    const blob = new Blob([data.accessibleHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    accessibleFrame.src = url;
+    
+    // Show metadata
+    metadataSection.style.display = 'block';
+    imageCount.textContent = data.metadata.imageCount || 0;
+    mathCount.textContent = data.metadata.mathExpressionCount || 0;
+    
+    const processedDate = new Date(data.metadata.processedAt);
+    processedTime.textContent = processedDate.toLocaleTimeString();
+    
+    // Show accessibility comparison if available
+    if (data.accessibilityScore) {
+        displayAccessibilityComparison(data.accessibilityScore);
+    }
+    
+    // Show accessible tab and HTML download button
+    document.querySelector('[data-tab="accessible"]').style.display = 'block';
+    downloadHTMLBtn.style.display = 'inline-block';
+    
+    outputSection.style.display = 'block';
+    outputSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+    // Log image descriptions for debugging
+    if (data.images && data.images.length > 0) {
+        console.log('Image descriptions:', data.images);
+    }
+}
+
+// Display accessibility comparison
+function displayAccessibilityComparison(accessibilityScore) {
+    const accessibilityComparison = document.getElementById('accessibilityComparison');
+    const scoreBefore = document.getElementById('scoreBefore');
+    const scoreAfter = document.getElementById('scoreAfter');
+    const violationsBefore = document.getElementById('violationsBefore');
+    const violationsAfter = document.getElementById('violationsAfter');
+    const improvementSummary = document.getElementById('improvementSummary');
+    
+    // Display scores
+    scoreBefore.textContent = accessibilityScore.before.score;
+    scoreAfter.textContent = accessibilityScore.after.score;
+    
+    // Display violations
+    violationsBefore.textContent = `${accessibilityScore.before.violations} issue${accessibilityScore.before.violations !== 1 ? 's' : ''}`;
+    violationsAfter.textContent = `${accessibilityScore.after.violations} issue${accessibilityScore.after.violations !== 1 ? 's' : ''}`;
+    
+    // Display improvement summary
+    improvementSummary.textContent = accessibilityScore.summary;
+    
+    // Show the comparison section
+    accessibilityComparison.style.display = 'block';
+    
+    // Log full accessibility report
+    console.log('Accessibility Report:', accessibilityScore);
 }
 
 // Copy to clipboard
@@ -278,6 +402,23 @@ downloadBtn.addEventListener('click', () => {
     URL.revokeObjectURL(url);
     
     showNotification('File downloaded!', 'success');
+});
+
+// Download accessible HTML
+downloadHTMLBtn.addEventListener('click', () => {
+    if (!currentAccessibleHTML) return;
+    
+    const blob = new Blob([currentAccessibleHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'accessible-document.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Accessible HTML downloaded!', 'success');
 });
 
 // Helper functions

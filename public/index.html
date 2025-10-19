@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mathpix Converter - PDF & Image to MMD/HTML</title>
+    <title>Accessify - PDF & Image to MMD/HTML</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📄 Mathpix Converter</h1>
-            <p class="subtitle">Convert PDFs and Images to Markdown or HTML</p>
+            <h1>♿ Accessify</h1>
+            <p class="subtitle">Convert PDFs and Images to Accessible Markdown or HTML</p>
         </header>
 
         <main>
@@ -21,6 +21,19 @@
                         <button class="format-btn active" data-format="mmd">MMD (Markdown)</button>
                         <button class="format-btn" data-format="html">HTML</button>
                     </div>
+                </div>
+
+                <div class="accessibility-toggle">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="accessibilityMode" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">
+                            🎯 STEM-Access Mode (AI Descriptions + MathML)
+                        </span>
+                    </label>
+                    <p class="toggle-description">
+                        Enable full accessibility preprocessing with Gemini-powered image descriptions and MathML equations
+                    </p>
                 </div>
 
                 <div class="upload-container" id="uploadContainer">
@@ -55,11 +68,49 @@
                     <div class="output-actions">
                         <button class="action-btn" id="copyBtn">📋 Copy</button>
                         <button class="action-btn" id="downloadBtn">💾 Download</button>
+                        <button class="action-btn" id="downloadHTMLBtn" style="display: none;">📄 Download HTML</button>
                     </div>
                 </div>
+                
+                <div class="metadata-section" id="metadataSection" style="display: none;">
+                    <div class="metadata-grid">
+                        <div class="metadata-item">
+                            <span class="metadata-label">📊 Images Processed:</span>
+                            <span class="metadata-value" id="imageCount">0</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">🔢 Math Expressions:</span>
+                            <span class="metadata-value" id="mathCount">0</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">⏱️ Processed:</span>
+                            <span class="metadata-value" id="processedTime">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accessibility-comparison" id="accessibilityComparison" style="display: none;">
+                    <h3>♿ Accessibility Improvement</h3>
+                    <div class="score-comparison">
+                        <div class="score-box before">
+                            <div class="score-label">Before</div>
+                            <div class="score-value" id="scoreBefore">0</div>
+                            <div class="score-violations" id="violationsBefore">0 issues</div>
+                        </div>
+                        <div class="score-arrow">→</div>
+                        <div class="score-box after">
+                            <div class="score-label">After</div>
+                            <div class="score-value" id="scoreAfter">0</div>
+                            <div class="score-violations" id="violationsAfter">0 issues</div>
+                        </div>
+                    </div>
+                    <div class="improvement-summary" id="improvementSummary"></div>
+                </div>
+
                 <div class="output-tabs">
                     <button class="tab-btn active" data-tab="preview">Preview</button>
-                    <button class="tab-btn" data-tab="raw">Raw</button>
+                    <button class="tab-btn" data-tab="raw">Raw Markdown</button>
+                    <button class="tab-btn" data-tab="accessible" style="display: none;">Accessible HTML</button>
                 </div>
                 <div class="output-content">
                     <div class="tab-content active" id="previewTab">
@@ -68,12 +119,15 @@
                     <div class="tab-content" id="rawTab">
                         <pre id="rawContent"></pre>
                     </div>
+                    <div class="tab-content" id="accessibleTab">
+                        <iframe id="accessibleFrame" style="width: 100%; min-height: 500px; border: 1px solid #ddd; border-radius: 5px;"></iframe>
+                    </div>
                 </div>
             </div>
         </main>
 
         <footer>
-            <p>Powered by <a href="https://mathpix.com/" target="_blank">Mathpix API</a></p>
+            <p>Powered by <a href="https://mathpix.com/" target="_blank">Mathpix API</a> & <a href="https://ai.google.dev/" target="_blank">Google Gemini</a></p>
         </footer>
     </div>
 
@@ -83,4 +137,5 @@
     <script src="app.js"></script>
 </body>
 </html>
+
 
